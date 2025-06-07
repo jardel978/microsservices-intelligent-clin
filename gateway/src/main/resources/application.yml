@@ -1,0 +1,18 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST_PORT:config-server:8888}
+  cloud:
+    config:
+      profile: ${PROFILE:test}
+eureka:
+  instance:
+    hostname: eureka-service
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
