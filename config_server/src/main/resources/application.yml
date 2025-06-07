@@ -1,0 +1,32 @@
+server:
+  port: ${PORT_CONFIG_SERVER:8888}
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/jardel978/intelligentclin_config
+eureka:
+  instance:
+    hostname: eureka-service
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+info:
+  name: Servico de configuracao dos demais servicos presentes no ecossistema da aplicacao
+  author: Jardel S. Oliveira
+  mail: jardeloliver197@gmail.com
+  severity: Medio
+
