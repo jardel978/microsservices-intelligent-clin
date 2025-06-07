@@ -1,0 +1,25 @@
+server:
+  port: 8761
+eureka:
+  instance:
+    hostname: eureka-service
+  client:
+    registerWithEureka: true
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka
+  server:
+    wait-time-in-ms-when-sync-empty: 3000
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+info:
+  name: Servico de registro e descobrimento dos demais servicos presentes no ecossistema da aplicacao
+  author: Jardel S. Oliveira
+  mail: jardeloliver197@gmail.com
+  severity: Medio
