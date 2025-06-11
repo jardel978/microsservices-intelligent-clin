@@ -1,0 +1,103 @@
+services:
+  zipkin-service:
+    image: openzipkin/zipkin:2
+    container_name: zipkin-service
+    ports:
+      - 9411:9411
+    networks:
+      - microsservicos
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microsservicos
+
+  eureka-service:
+    build: eureka_service
+    container_name: eureka-service
+    depends_on:
+      - zipkin-service
+    ports:
+      - 8761:8761
+    networks:
+      - microsservicos
+
+  config-server:
+    build: config_server
+    container_name: config-server
+    depends_on:
+      - eureka-service
+    ports:
+      - 8888:8888
+    networks:
+      - microsservicos
+
+  gateway:
+    build: gateway 
+    container_name: gateway
+    depends_on:
+      - eureka-service
+      # - users-service
+      # - clinic-service
+    ports:
+      - 8080:8080
+    environment:
+      - PROFILE=prod
+    networks:
+      - microsservicos
+
+  users-service:
+    build: users_service
+    container_name: users-service
+    depends_on:
+      - eureka-service
+    ports:
+      - 8001:8001
+    environment:
+      - PROFILE=prod
+    networks:
+      - microsservicos
+
+  clinic-service:
+    build: clinic_service
+    container_name: clinic-service
+    depends_on:
+      - eureka-service
+      - users-service
+    ports:
+      - 8002:8002
+          - PROFILE=prod
+    networks:
+      - microsservicos
+
+  clinicdb:
+    image: mongo:5.0.8
+    container_name: clinicdb
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/clinicdb --quiet
+    networks:
+      - microsservicos
+
+  mysql:
+    image: mysql:5.7.38
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=users
+      - MYSQL_USER=users
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root_password
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+    networks:
+      - microsservicos
+
+networks:
+  microsservicos:
+    driver: bridge

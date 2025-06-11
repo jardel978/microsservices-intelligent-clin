@@ -1,0 +1,48 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: clinic-service
+          uri: http://clinic-service
+          predicates:
+            - Path=/clinic/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: clinicService
+                fallbackUri: forward:/fallback/clinic
+
+        - id: users-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: usersService
+                fallbackUri: forward:/fallback/users
+    security:
+      oauth2:
+        resourceserver:
+          jwt:
+            jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+ 
