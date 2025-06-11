@@ -1,0 +1,12 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /clinic/
+spring:
+  application:
+    name: clinic-service
+  config:
+    import: optional:configserver:http://${CONFIG_SERVER_HOST_PORT:config-server:8888}
+  cloud:
+    config:
+      profile: ${PROFILE:test}

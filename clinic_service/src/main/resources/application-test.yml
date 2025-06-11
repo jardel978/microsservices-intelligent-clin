@@ -1,0 +1,58 @@
+spring:
+  data:
+    mongodb:
+      database: clinicdb
+      host: localhost
+      port: 0
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+  security:
+      oauth2:
+        resourceserver:
+          jwt:
+            jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+
+mensagem: hello catalog
+
+queue:
+  api-catalog:
+    name: CatalogQueue
+  
+springdoc:
+  show-actuator: true
+  swagger-ui:
+    groups-order: DESC
+    disable-swagger-default-url: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+info:
+  name: Servico de consultas e prontuarios.
+  author: Jardel S. Oliveira
+  mail: jardeloliver197@gmail.com
+  severity: Medio
+
