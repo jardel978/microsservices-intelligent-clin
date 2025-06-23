@@ -2,16 +2,15 @@ package com.intelligentclin.users_service.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.intelligentclin.users_service.model.dto.AuthRequest;
+import com.intelligentclin.users_service.model.enums.TypeUser;
 
 import lombok.*;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "TB_USERS")
-@SequenceGenerator(name = "users", sequenceName = "SQ_TB_USERS", allocationSize = 1)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User implements Serializable {
 
@@ -30,8 +28,8 @@ public class User implements Serializable {
 
     @Id
     @Column(name = "auth_id")
-    @GeneratedValue(generator = "users", strategy = GenerationType.UUID)
-    private UUID auth_id;
+    @GeneratedValue(generator = "users", strategy = GenerationType.SEQUENCE)
+    private Long auth_id;
 
     @Column(name = "uid", nullable = false, unique = true)
     private String uid;
@@ -42,15 +40,16 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     @ToString.Exclude
-    @Size(min = 6, max = 15, message = "password must be longer than 6 characters.")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @NotNull(message = "The field 'role' is mandatory")
     @Column(nullable = false)
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "tb_users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "tb_users_roles", joinColumns = @JoinColumn(name = "auth_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    private TypeUser type;
 
     public boolean isLoginCorrect(AuthRequest authRequest, PasswordEncoder passwordEncoder) {
         return passwordEncoder.matches(authRequest.password(), this.password);
@@ -62,6 +61,7 @@ public class User implements Serializable {
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.roles = user.getRoles();
+        this.type = user.getType();
     }
    
 }

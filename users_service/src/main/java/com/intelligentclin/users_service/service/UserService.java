@@ -25,27 +25,38 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.intelligentclin.common_models.models.dtos.attendat.AttendantReq;
+import com.intelligentclin.common_models.models.dtos.dentist.DentistReq;
 import com.intelligentclin.users_service.model.dto.AuthRequest;
 import com.intelligentclin.users_service.model.dto.CreateUserDto;
 import com.intelligentclin.users_service.model.dto.TokenResult;
 import com.intelligentclin.users_service.model.entity.Role;
 import com.intelligentclin.users_service.model.entity.User;
+import com.intelligentclin.users_service.model.enums.TypeUser;
 import com.intelligentclin.users_service.repository.IRoleRepository;
 import com.intelligentclin.users_service.repository.IUserRepository;
+import com.intelligentclin.users_service.service.feign.IClinicFeignClient;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserService implements IUserService {
 
+    @Autowired
     private JwtEncoder jwtEncoder;
+    @Autowired
     private JwtDecoder jwtDecoder;
+    @Autowired
     private IUserRepository userRepository;
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
     private IRoleRepository roleRepository;
-     
+    @Autowired
+    private IClinicFeignClient clinicFeignClient;
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Account not found with id "));
@@ -54,20 +65,35 @@ public class UserService implements IUserService {
 
     @Override
     public void newUser(CreateUserDto dto) {
-        var userRole = roleRepository.findByName(Role.Values.ATTENDANT.name());
-
-        var userFromDb = userRepository.findByUsername(dto.username());
+        
+        var userFromDb = userRepository.findByUsername(dto.getUsername());
         if (userFromDb.isPresent()) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         }
-
+        
         var user = new User();
-        user.setUid(UUID.randomUUID().toString());
-        user.setUsername(dto.username());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        user.setRoles(Set.of(userRole));
-        // todo chamar feign para registrar no clinic
-
+        String userUid = UUID.randomUUID().toString();
+        user.setUid(userUid);
+        user.setUsername(dto.getUsername());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        
+        if (dto.getType() == null) {
+            user.setType(TypeUser.ATTENDANT);
+        } else {
+            user.setType(dto.getType());
+        }
+        switch (user.getType()) {
+            case ATTENDANT:
+                clinicFeignClient.createAttendant(new AttendantReq(userUid, dto.getFirstName(), dto.getFirstName(), dto.getCpf(), dto.getEmail(), dto.getPhone(), dto.getGender()));
+                user.setRoles(Set.of(roleRepository.findByNameIgnoreCase(Role.Values.ATTENDANT.name())));
+                break;
+            case DENTIST:
+                clinicFeignClient.createDentist(new DentistReq(userUid, dto.getFirstName(), dto.getFirstName(), dto.getCpf(), dto.getEmail(), dto.getPhone(), dto.getRegistrationNumber(), dto.getSpecialties()));
+                user.setRoles(Set.of(roleRepository.findByNameIgnoreCase(Role.Values.DENTIST.name())));
+                break;        
+            default:
+                break;
+        }
         userRepository.save(user);
     }
 
@@ -80,7 +106,7 @@ public class UserService implements IUserService {
         }
 
         var now = Instant.now();
-        var accessExpiresIn = 60 * 5L;
+        var accessExpiresIn = 60 * 60L;
 
         var scopes = user.get().getRoles()
                 .stream()
@@ -105,7 +131,6 @@ public class UserService implements IUserService {
                 .build();
 
         var refreshToken = jwtEncoder.encode(JwtEncoderParameters.from(refreshClaims)).getTokenValue();
-
         return new TokenResult(accessToken, refreshToken, accessExpiresIn);
     }
 

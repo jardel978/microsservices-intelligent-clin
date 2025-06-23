@@ -12,6 +12,7 @@ import com.intelligentclin.users_service.repository.IRoleRepository;
 import com.intelligentclin.users_service.repository.IUserRepository;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Configuration
 public class AdminUserConfig implements CommandLineRunner {
@@ -29,8 +30,8 @@ public class AdminUserConfig implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
 
-        var roleAdmin = roleRepository.findByName(Role.Values.ADMIN.name());
-
+        var roleAdmin = roleRepository.findByNameIgnoreCase(Role.Values.ADMIN.name());
+        
         var userAdmin = userRepository.findByUsername("admin");
 
         userAdmin.ifPresentOrElse(
@@ -38,11 +39,15 @@ public class AdminUserConfig implements CommandLineRunner {
                     System.out.println("admin alwready exists");
                 },
                 () -> {
-                    var user = new User();
-                    user.setUsername("admin");
-                    user.setPassword(passwordEncoder.encode("1234"));
-                    user.setRoles(Set.of(roleAdmin));
-                    userRepository.save(user);
+                    if (roleAdmin != null) {
+                        System.out.println("role admin:" + roleAdmin.getName());
+                        var user = new User();
+                        user.setUid(UUID.randomUUID().toString());
+                        user.setUsername("admin");
+                        user.setPassword(passwordEncoder.encode("12345678"));
+                        user.setRoles(Set.of(roleAdmin));
+                        userRepository.save(user);
+                    }
                 });
     }
 }

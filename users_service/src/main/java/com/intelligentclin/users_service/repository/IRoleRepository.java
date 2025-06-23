@@ -8,5 +8,5 @@ import com.intelligentclin.users_service.model.entity.Role;
 
 @Repository
 public interface IRoleRepository extends JpaRepository<Role, Long> {
-    Role findByName(String name);
+    Role findByNameIgnoreCase(String name);
 }
