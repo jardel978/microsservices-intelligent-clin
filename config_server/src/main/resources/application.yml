@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: config-server
+  profiles:
+    active: ${PROFILE:test}
   cloud:
     config:
       server:
@@ -10,7 +12,7 @@ spring:
           uri: https://github.com/jardel978/intelligentclin_config
 eureka:
   instance:
-    hostname: eureka-service
+    hostname: ${EUREKA_HOST:localhost}
   client:
     registerWithEureka: true
     fetchRegistry: true
