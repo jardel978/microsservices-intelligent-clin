@@ -1,21 +1,19 @@
 package com.intelligentclin.clinic_service.service;
 
-import com.intelligentclin.clinic_service.dtos.converters.DentistModelMapperConverter;
-import com.intelligentclin.clinic_service.dtos.dentist.DentistReq;
-import com.intelligentclin.clinic_service.dtos.dentist.DentistResp;
-import com.intelligentclin.clinic_service.entity.Dentist;
-import com.intelligentclin.clinic_service.entity.enums.Specialty;
+import com.intelligentclin.clinic_service.model.dtos.converters.DentistModelMapperConverter;
+import com.intelligentclin.common_models.models.dtos.dentist.DentistReq;
+import com.intelligentclin.common_models.models.dtos.dentist.DentistResp;
+import com.intelligentclin.clinic_service.model.entity.Dentist;
+import com.intelligentclin.common_models.models.enums.Specialty;
 import com.intelligentclin.clinic_service.repository.IDentistRepository;
 import com.intelligentclin.clinic_service.service.exception.DataNotFoundException;
 import com.intelligentclin.clinic_service.service.exception.RelatedEntityException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,14 +39,15 @@ public class DentistService {
     }
 
     // Custom search with filtering
-    public Page<DentistResp> findCustom(Pageable pageable,
+    public Page<DentistResp> findCustom(
             String id,
             String firstName,
             String lastName,
-            String cpf) {
-        List<Dentist> list = dentistRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf);
-        Page<Dentist> dentistPage = new PageImpl<>(list, pageable, list.stream().count());
-        return dentistPage.map(dentist -> dentistConverter.mapEntityToModelResp(dentist, DentistResp.class));
+            String cpf,
+            Pageable pageable) {
+        Page<Dentist> page = dentistRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf, 
+                pageable);
+        return page.map(dentist -> dentistConverter.mapEntityToModelResp(dentist, DentistResp.class));
     }
 
     // Find by registration number (matricula)
@@ -60,8 +59,8 @@ public class DentistService {
     }
 
     // Find by specialty with pagination
-    public Page<DentistResp> findBySpecialty(Pageable pageable, Specialty specialty) {
-        Page<Dentist> dentistsPage = dentistRepository.findBySpecialtiesContaining(pageable, specialty);
+    public Page<DentistResp> findBySpecialty(Specialty specialty, Pageable pageable) {
+        Page<Dentist> dentistsPage = dentistRepository.findBySpecialtiesContaining(specialty, pageable);
         return dentistsPage.map(dentist -> {
             DentistResp dentistDTO = dentistConverter.mapEntityToModelResp(dentist, DentistResp.class);
             return dentistDTO;
@@ -107,13 +106,13 @@ public class DentistService {
         Dentist existingDentist = dentistRepository.findById(uid)
                 .orElseThrow(() -> new DataNotFoundException("Dentist not found."));
         
-        existingDentist.setFirstName(dentistDTO.firstName());
-        existingDentist.setLastName(dentistDTO.lastName());
-        existingDentist.setCpf(dentistDTO.cpf());
-        existingDentist.setEmail(dentistDTO.email());
-        existingDentist.setPhone(dentistDTO.phone());
-        existingDentist.setRegistrationNumber(dentistDTO.registrationNumber());
-        existingDentist.setSpecialties(dentistDTO.specialties());
+        existingDentist.setFirstName(dentistDTO.getFirstName());
+        existingDentist.setLastName(dentistDTO.getFirstName());
+        existingDentist.setCpf(dentistDTO.getCpf());
+        existingDentist.setEmail(dentistDTO.getEmail());
+        existingDentist.setPhone(dentistDTO.getPhone());
+        existingDentist.setRegistrationNumber(dentistDTO.getRegistrationNumber());
+        existingDentist.setSpecialties(dentistDTO.getSpecialties());
         dentistRepository.save(existingDentist);
     }
 

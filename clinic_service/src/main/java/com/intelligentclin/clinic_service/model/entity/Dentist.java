@@ -1,9 +1,10 @@
-package com.intelligentclin.clinic_service.entity;
+package com.intelligentclin.clinic_service.model.entity;
 
-import com.intelligentclin.clinic_service.entity.enums.Specialty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.intelligentclin.common_models.models.enums.Specialty;
 
 import java.util.List;
 import java.util.Set;

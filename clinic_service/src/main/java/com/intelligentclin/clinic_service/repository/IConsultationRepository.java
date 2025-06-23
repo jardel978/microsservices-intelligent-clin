@@ -1,8 +1,9 @@
 package com.intelligentclin.clinic_service.repository;
 
-import com.intelligentclin.clinic_service.entity.Consultation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
+
+import com.intelligentclin.clinic_service.model.entity.Consultation;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

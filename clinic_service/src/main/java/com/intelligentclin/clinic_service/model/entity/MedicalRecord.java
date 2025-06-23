@@ -1,4 +1,4 @@
-package com.intelligentclin.clinic_service.entity;
+package com.intelligentclin.clinic_service.model.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

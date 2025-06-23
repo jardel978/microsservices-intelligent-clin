@@ -1,19 +1,19 @@
 package com.intelligentclin.clinic_service.repository;
 
-import com.intelligentclin.clinic_service.entity.Patient;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.intelligentclin.clinic_service.model.entity.Patient;
+
 @Repository
 public interface IPatientRepository extends MongoRepository<Patient, String> {
 
-    Page<Patient> findByFirstNameContainingIgnoreCase(Pageable pageable, String firstName);
+    Page<Patient> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable);
     
-    Page<Patient> findByLastNameContainingIgnoreCase(String lastName);
+    Page<Patient> findByLastNameContainingIgnoreCase(String lastName, Pageable pageable);
 
     @Query("{ '$or': [ " +
            "  { 'uid': ?0 }, " +
@@ -25,6 +25,7 @@ public interface IPatientRepository extends MongoRepository<Patient, String> {
         String id,
         String firstName,
         String lastName,
-        String cpf
+        String cpf,
+        Pageable pageable
     );
 }

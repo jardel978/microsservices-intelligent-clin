@@ -1,13 +1,14 @@
 package com.intelligentclin.clinic_service.service;
 
-import com.intelligentclin.clinic_service.dtos.converters.PatientModelMapperConverter;
-import com.intelligentclin.clinic_service.dtos.patient.PatientReq;
-import com.intelligentclin.clinic_service.dtos.patient.PatientResp;
-import com.intelligentclin.clinic_service.entity.Patient;
+import com.intelligentclin.clinic_service.model.dtos.converters.PatientModelMapperConverter;
+import com.intelligentclin.common_models.models.dtos.patient.PatientReq;
+import com.intelligentclin.common_models.models.dtos.patient.PatientResp;
+import com.intelligentclin.clinic_service.model.entity.Patient;
 import com.intelligentclin.clinic_service.repository.IPatientRepository;
 import com.intelligentclin.clinic_service.service.exception.DataNotFoundException;
 import com.intelligentclin.clinic_service.service.exception.RelatedEntityException;
 import com.intelligentclin.clinic_service.service.utils.UtilDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -32,6 +34,7 @@ public class PatientService {
 
     public void save(PatientReq patientDTO) {
         Patient patient = patientConverter.mapModelReqToEntity(patientDTO, Patient.class);
+        patient.setCreatedAt(LocalDateTime.now());
         patientRepository.save(patient);
     }
 
@@ -43,12 +46,13 @@ public class PatientService {
         return Optional.ofNullable(patientConverter.mapEntityToModelResp(patient, PatientResp.class));
     }
 
-    public Page<PatientResp> findCustom(Pageable pageable,
+    public Page<PatientResp> findCustom(
             String id,
             String firstName,
             String lastName,
-            String cpf) {
-        Page<Patient> page = patientRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf);
+            String cpf,
+            Pageable pageable) {
+        Page<Patient> page = patientRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf, pageable);
         // Page<Patient> patientPage = new PageImpl<>(list, pageable, list.size());
 
         return page.map(patient -> {
@@ -85,14 +89,14 @@ public class PatientService {
         Patient patientFromDB = patientRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found."));
 
-        patientFromDB.setFirstName(patientDTO.firstName());
-        patientFromDB.setLastName(patientDTO.lastName());
-        patientFromDB.setCpf(patientDTO.cpf());
-        patientFromDB.setEmail(patientDTO.email());
-        patientFromDB.setPhone(patientDTO.phone());
-        patientFromDB.setBirthDate(patientDTO.birthDate());
-        patientFromDB.setAddress(patientDTO.address());
-        patientFromDB.setGender(patientDTO.gender());
+        patientFromDB.setFirstName(patientDTO.getFirstName());
+        patientFromDB.setLastName(patientDTO.getFirstName());
+        patientFromDB.setCpf(patientDTO.getCpf());
+        patientFromDB.setEmail(patientDTO.getEmail());
+        patientFromDB.setPhone(patientDTO.getPhone());
+        patientFromDB.setBirthDate(patientDTO.getBirthDate());
+        patientFromDB.setAddress(patientDTO.getAddress());
+        patientFromDB.setGender(patientDTO.getGender());
         patientRepository.save(patientFromDB);
     }
 

@@ -1,11 +1,12 @@
 package com.intelligentclin.clinic_service.repository;
 
-import com.intelligentclin.clinic_service.entity.Attendant;
-
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import com.intelligentclin.clinic_service.model.entity.Attendant;
 
 @Repository
 public interface IAttendantRepository extends MongoRepository<Attendant, String> {
@@ -19,6 +20,7 @@ public interface IAttendantRepository extends MongoRepository<Attendant, String>
         String id,
         String firstName,
         String lastName,
-        String cpf
+        String cpf,
+        Pageable pageable
     );
 }

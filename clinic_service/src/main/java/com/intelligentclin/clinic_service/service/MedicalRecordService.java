@@ -1,11 +1,11 @@
 package com.intelligentclin.clinic_service.service;
 
-import com.intelligentclin.clinic_service.dtos.converters.MedicalRecordModelMapperConverter;
-import com.intelligentclin.clinic_service.dtos.medicalRecord.MedicalRecordReq;
-import com.intelligentclin.clinic_service.dtos.medicalRecord.MedicalRecordResp;
-import com.intelligentclin.clinic_service.entity.Dentist;
-import com.intelligentclin.clinic_service.entity.Patient;
-import com.intelligentclin.clinic_service.entity.MedicalRecord;
+import com.intelligentclin.clinic_service.model.dtos.converters.MedicalRecordModelMapperConverter;
+import com.intelligentclin.common_models.models.dtos.medicalRecord.MedicalRecordReq;
+import com.intelligentclin.common_models.models.dtos.medicalRecord.MedicalRecordResp;
+import com.intelligentclin.clinic_service.model.entity.Dentist;
+import com.intelligentclin.clinic_service.model.entity.MedicalRecord;
+import com.intelligentclin.clinic_service.model.entity.Patient;
 import com.intelligentclin.clinic_service.repository.IDentistRepository;
 import com.intelligentclin.clinic_service.repository.IPatientRepository;
 import com.intelligentclin.clinic_service.repository.IMedicalRecordRepository;
@@ -45,12 +45,12 @@ public class MedicalRecordService {
     public void save(MedicalRecordReq medicalRecordReq) {
         MedicalRecord medicalRecord = medicalRecordConverter.mapModelReqToEntity(medicalRecordReq, MedicalRecord.class);
 
-        Patient patient = patientRepository.findById(medicalRecordReq.patientUid())
+        Patient patient = patientRepository.findById(medicalRecordReq.getPatientUid())
                 .orElseThrow(() -> new DataNotFoundException("The specified Patient was not found in the database."));
 
         patient.setAge(dateUtils.generate(patient.getBirthDate(), LocalDate.now()));
 
-        Dentist dentist = dentistRepository.findById(medicalRecordReq.dentistUid())
+        Dentist dentist = dentistRepository.findById(medicalRecordReq.getDentistUid())
                 .orElseThrow(() -> new DataNotFoundException("The specified Dentist was not found in the database."));
 
         try {
@@ -62,9 +62,9 @@ public class MedicalRecordService {
                 MedicalRecord existingRecord = medicalRecordRepository.findById(patient.getMedicalRecordUid())
                         .orElseThrow(() -> new DataNotFoundException(
                                 "The specified medical record was not found in the database."));
-                existingRecord.setDentistUid(medicalRecordReq.dentistUid());
-                existingRecord.setTreatmentPlan(medicalRecordReq.treatmentPlan());
-                existingRecord.setTreatmentProgress(medicalRecordReq.treatmentProgress());
+                existingRecord.setDentistUid(medicalRecordReq.getDentistUid());
+                existingRecord.setTreatmentPlan(medicalRecordReq.getTreatmentPlan());
+                existingRecord.setTreatmentProgress(medicalRecordReq.getTreatmentProgress());
             }
             patientRepository.save(patient);           
         } catch (RuntimeException e) {

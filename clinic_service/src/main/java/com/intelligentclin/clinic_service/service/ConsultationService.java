@@ -1,13 +1,13 @@
 package com.intelligentclin.clinic_service.service;
 
-import com.intelligentclin.clinic_service.dtos.consultation.ConsultationReq;
-import com.intelligentclin.clinic_service.dtos.consultation.ConsultationResp;
-import com.intelligentclin.clinic_service.dtos.converters.ConsultationModelMapperConverter;
-import com.intelligentclin.clinic_service.entity.Attendant;
-import com.intelligentclin.clinic_service.entity.Consultation;
-import com.intelligentclin.clinic_service.entity.Dentist;
-import com.intelligentclin.clinic_service.entity.Patient;
-import com.intelligentclin.clinic_service.entity.enums.ConsultationStatus;
+import com.intelligentclin.common_models.models.dtos.consultation.ConsultationReq;
+import com.intelligentclin.common_models.models.dtos.consultation.ConsultationResp;
+import com.intelligentclin.clinic_service.model.dtos.converters.ConsultationModelMapperConverter;
+import com.intelligentclin.clinic_service.model.entity.Attendant;
+import com.intelligentclin.clinic_service.model.entity.Consultation;
+import com.intelligentclin.clinic_service.model.entity.Dentist;
+import com.intelligentclin.clinic_service.model.entity.Patient;
+import com.intelligentclin.common_models.models.enums.ConsultationStatus;
 import com.intelligentclin.clinic_service.repository.IAttendantRepository;
 import com.intelligentclin.clinic_service.repository.IConsultationRepository;
 import com.intelligentclin.clinic_service.repository.IDentistRepository;
@@ -15,6 +15,7 @@ import com.intelligentclin.clinic_service.repository.IPatientRepository;
 import com.intelligentclin.clinic_service.service.exception.ConsultationStatusException;
 import com.intelligentclin.clinic_service.service.exception.DataNotFoundException;
 import com.intelligentclin.clinic_service.service.utils.UtilDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,8 +47,8 @@ public class ConsultationService {
         private UtilDate utilDate;
 
         public void save(ConsultationReq consultationReq) {
-                LocalDate consultationDate = consultationReq.consultationDate();
-                LocalTime consultationTime = consultationReq.consultationTime();
+                LocalDate consultationDate = consultationReq.getConsultationDate();
+                LocalTime consultationTime = consultationReq.getConsultationTime();
                 Consultation existingConsultation = consultationRepository.findByConsultationDateAndConsultationTime(
                                 consultationDate,
                                 consultationTime);
@@ -65,12 +66,12 @@ public class ConsultationService {
                         if (Boolean.FALSE.equals(utilDate.checkIfPreviousDate(dateTime))) {
 
                                 String notFoundMessage = "not found in the database.";
-                                Patient patient = patientRepository.findById(consultationReq.uid()).orElseThrow(() -> new DataNotFoundException("Patient " + notFoundMessage));
-                                Dentist dentist = dentistRepository.findById(consultationReq.uid()).orElseThrow(() -> new DataNotFoundException("Dentist " + notFoundMessage));
-                                Attendant attendat = attendantRepository.findById(consultationReq.uid()).orElseThrow(() -> new DataNotFoundException("Attendant " + notFoundMessage));
+                                Patient patient = patientRepository.findById(consultationReq.getUid()).orElseThrow(() -> new DataNotFoundException("Patient " + notFoundMessage));
+                                Dentist dentist = dentistRepository.findById(consultationReq.getUid()).orElseThrow(() -> new DataNotFoundException("Dentist " + notFoundMessage));
+                                Attendant attendat = attendantRepository.findById(consultationReq.getUid()).orElseThrow(() -> new DataNotFoundException("Attendant " + notFoundMessage));
 
                                
-                                var consultationAux = new ConsultationReq(null, patient.getUid(), dentist.getUid(), attendat.getUid(), consultationReq.consultationDate(), consultationReq.consultationTime(), consultationReq.notes(), consultationReq.amount(), ConsultationStatus.PENDING, dateTime);
+                                var consultationAux = new ConsultationReq(null, patient.getUid(), dentist.getUid(), attendat.getUid(), consultationReq.getConsultationDate(), consultationReq.getConsultationTime(), consultationReq.getNotes(), consultationReq.getAmount(), ConsultationStatus.PENDING);
                                 Consultation consultation = consultationConverter.mapModelReqToEntity(
                                                 consultationAux,
                                                 Consultation.class);
@@ -128,8 +129,8 @@ public class ConsultationService {
                                 .orElseThrow(() -> new DataNotFoundException(
                                                 "The specified consultation could not be found in the database."));
 
-                LocalDate consultationDate = consultationReq.consultationDate();
-                LocalTime consultationTime = consultationReq.consultationTime();
+                LocalDate consultationDate = consultationReq.getConsultationDate();
+                LocalTime consultationTime = consultationReq.getConsultationTime();
                 Consultation existingConsultation = consultationRepository.findByConsultationDateAndConsultationTime(
                                 consultationDate,
                                 consultationTime);
@@ -155,25 +156,24 @@ public class ConsultationService {
                 if (isDateValid) {
                         if (canUpdateConsultation) {
                                 String notFoundMessage = "not found in the database.";
-                                Patient patient = patientRepository.findById(existingConsultation.getPatientUid())
-                                                .orElseThrow(() -> new DataNotFoundException(
-                                                                "Patient " + notFoundMessage));
-                                Dentist dentist = dentistRepository.findById(existingConsultation.getDentistUid())
+                                if (consultationReq.getDentistUid() != null){
+                                Dentist dentist = dentistRepository.findById(consultationReq.getDentistUid())
                                                 .orElseThrow(() -> new DataNotFoundException(
                                                                 "Dentist " + notFoundMessage));
-                                Attendant attendant = attendantRepository.findById(existingConsultation.getAttendantUid())
-                                                .orElseThrow(() -> new DataNotFoundException(
-                                                                "User " + notFoundMessage));
+                                        consultationFromDB.setDentistUid(dentist.getUid());
 
-                                consultationFromDB.setPatientUid(patient.getUid());
-                                consultationFromDB.setDentistUid(dentist.getUid());
+                                }
+                                Attendant attendant = attendantRepository.findById(consultationReq.getAttendantUid())
+                                                .orElseThrow(() -> new DataNotFoundException(
+                                                                "Attendant " + notFoundMessage));
+
                                 consultationFromDB.setAttendantUid(attendant.getUid());
-                                consultationFromDB.setConsultationDate(consultationReq.consultationDate());
-                                consultationFromDB.setConsultationTime(consultationReq.consultationTime());
-                                consultationFromDB.setNotes(consultationReq.notes());
-                                consultationFromDB.setAmount(consultationReq.amount());
-                                if (consultationFromDB.getStatus() != consultationReq.status()) {
-                                        consultationFromDB.setStatus(consultationReq.status());
+                                consultationFromDB.setConsultationDate(consultationReq.getConsultationDate());
+                                consultationFromDB.setConsultationTime(consultationReq.getConsultationTime());
+                                consultationFromDB.setNotes(consultationReq.getNotes());
+                                consultationFromDB.setAmount(consultationReq.getAmount());
+                                if (consultationFromDB.getStatus() != consultationReq.getStatus()) {
+                                        consultationFromDB.setStatus(consultationReq.getStatus());
                                         consultationFromDB.setStatusUpdatedAt(LocalDateTime.now());
                                 }
                                 consultationRepository.save(consultationFromDB);

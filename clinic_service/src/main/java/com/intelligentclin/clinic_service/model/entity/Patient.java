@@ -1,12 +1,17 @@
-package com.intelligentclin.clinic_service.entity;
+package com.intelligentclin.clinic_service.model.entity;
 
-import com.intelligentclin.clinic_service.entity.enums.Gender;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.intelligentclin.common_models.models.Address;
+import com.intelligentclin.common_models.models.Age;
+import com.intelligentclin.common_models.models.enums.Gender;
+
 import org.springframework.data.annotation.Transient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,6 +27,8 @@ public class Patient extends Person {
     private String uid;
 
     private LocalDate birthDate;
+
+    private LocalDateTime createdAt;
 
     @Transient
     private Age age;

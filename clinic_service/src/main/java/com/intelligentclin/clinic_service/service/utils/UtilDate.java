@@ -1,8 +1,9 @@
 package com.intelligentclin.clinic_service.service.utils;
 
-import com.intelligentclin.clinic_service.entity.Age;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import com.intelligentclin.common_models.models.Age;
 
 import java.io.Serializable;
 import java.time.LocalDate;

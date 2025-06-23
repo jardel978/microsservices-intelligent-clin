@@ -1,4 +1,4 @@
-package com.intelligentclin.clinic_service.dtos.converters;
+package com.intelligentclin.clinic_service.model.dtos.converters;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +18,6 @@ public class GenericModelMapperConverter<E, Req, Resp> {
 
     @Autowired
     private ModelMapper modelMapper;
-
 
     public Resp mapEntityToModelResp(E entity, Class<Resp> modelClassDestination) {
         return modelMapper.map(entity, modelClassDestination);

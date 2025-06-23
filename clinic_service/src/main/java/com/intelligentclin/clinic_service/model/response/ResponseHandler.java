@@ -1,4 +1,4 @@
-package com.intelligentclin.clinic_service.entity.response;
+package com.intelligentclin.clinic_service.model.response;
 
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,35 +1,26 @@
 spring:
   data:
     mongodb:
-      database: clinicdb
-      host: localhost
-      port: 0
-  rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: guest
-    password: guest
+      uri: mongodb://admin:admin123@localhost:27017/clinicdb?authSource=admin
+  # rabbitmq:
+  #   host: rabbitmq
+  #   port: 5672
+  #   username: guest
+  #   password: guest
   security:
-      oauth2:
-        resourceserver:
-          jwt:
-            jwk-set-uri: http://localhost:8081/.well-known/jwks.json
-
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    registerWithEureka: true
-    fetchRegistry: true
-    serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
-
-mensagem: hello catalog
-
-queue:
-  api-catalog:
-    name: CatalogQueue
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/auth/.well-known/jwks.json
+          
+# queue:
+#   name: name
   
+logging:
+  level:
+    org.springframework.data.mongodb.core: DEBUG
+    org.mongodb.driver: DEBUG
+
 springdoc:
   show-actuator: true
   swagger-ui:

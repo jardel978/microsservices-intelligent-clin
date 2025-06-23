@@ -1,12 +1,13 @@
 package com.intelligentclin.clinic_service.service;
 
-import com.intelligentclin.clinic_service.dtos.attendat.AttendantReq;
-import com.intelligentclin.clinic_service.dtos.attendat.AttendantResp;
-import com.intelligentclin.clinic_service.dtos.converters.AttendantModelMapperConverter;
-import com.intelligentclin.clinic_service.entity.Attendant;
+import com.intelligentclin.common_models.models.dtos.attendat.AttendantReq;
+import com.intelligentclin.common_models.models.dtos.attendat.AttendantResp;
+import com.intelligentclin.clinic_service.model.dtos.converters.AttendantModelMapperConverter;
+import com.intelligentclin.clinic_service.model.entity.Attendant;
 import com.intelligentclin.clinic_service.repository.IAttendantRepository;
 import com.intelligentclin.clinic_service.service.exception.DataNotFoundException;
 import com.intelligentclin.clinic_service.service.exception.RelatedEntityException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,13 +37,14 @@ public class AttendantService {
         return Optional.ofNullable(attendantConverter.mapEntityToModelResp(attendant, AttendantResp.class));
     }
 
-    public Page<AttendantResp> findCustom(Pageable pageable,
+    public Page<AttendantResp> findCustom(
             String id,
             String firstName,
             String lastName,
-            String cpf) {
-        Page<Attendant> page = attendantRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf);
-        // Page<Attendant> AttendantPage = new PageImpl<>(list, pageable, list.size());
+            String cpf,
+            Pageable pageable) {
+        Page<Attendant> page = attendantRepository.findByIdOrFirstNameOrLastNameOrCpf(id, firstName, lastName, cpf, pageable);
+        // Page<Attendant> AttendantPage = new PageImpl<>(list, list.size(),         );
 
         return page.map(attendant -> {
             return attendantConverter.mapEntityToModelResp(attendant, AttendantResp.class);
@@ -69,10 +71,10 @@ public class AttendantService {
         Attendant attendantFromDB = attendantRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attendant not found."));
 
-        attendantFromDB.setFirstName(attendantReq.firstName());
-        attendantFromDB.setLastName(attendantReq.lastName());
-        attendantFromDB.setCpf(attendantReq.cpf());
-        attendantFromDB.setEmail(attendantReq.email());
+        attendantFromDB.setFirstName(attendantReq.getFirstName());
+        attendantFromDB.setLastName(attendantReq.getFirstName());
+        attendantFromDB.setCpf(attendantReq.getCpf());
+        attendantFromDB.setEmail(attendantReq.getEmail());
         attendantRepository.save(attendantFromDB);
     }
 
