@@ -5,15 +5,15 @@ services:
     ports:
       - 9411:9411
     networks:
-      - microsservicos
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - microsservicos
+      - microsservices
+  # rabbitmq:
+  #   image: rabbitmq:management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   networks:
+  #     - microsservices
 
   eureka-service:
     build: eureka_service
@@ -22,66 +22,88 @@ services:
       - zipkin-service
     ports:
       - 8761:8761
+    environment:
+      - EUREKA_HOST=eureka-service
     networks:
-      - microsservicos
+      - microsservices
 
   config-server:
     build: config_server
     container_name: config-server
+    restart: always
     depends_on:
       - eureka-service
     ports:
       - 8888:8888
+    environment:
+      - EUREKA_HOST=eureka-service
     networks:
-      - microsservicos
+      - microsservices
 
   gateway:
     build: gateway 
     container_name: gateway
+    restart: always
     depends_on:
       - eureka-service
-      # - users-service
-      # - clinic-service
+      - config-server
+      - users-service
+      - clinic-service
     ports:
       - 8080:8080
     environment:
       - PROFILE=prod
+      - EUREKA_HOST=eureka-service
+      - CONFIG_SERVER_HOST_PORT=config-server:8888
     networks:
-      - microsservicos
+      - microsservices
 
   users-service:
     build: users_service
     container_name: users-service
+    restart: always
     depends_on:
       - eureka-service
+      - config-server
     ports:
       - 8001:8001
     environment:
       - PROFILE=prod
+      - EUREKA_HOST=eureka-service
+      - CONFIG_SERVER_HOST_PORT=config-server:8888
     networks:
-      - microsservicos
+      - microsservices
 
   clinic-service:
     build: clinic_service
     container_name: clinic-service
+    restart: always
     depends_on:
       - eureka-service
+      - config-server
       - users-service
     ports:
       - 8002:8002
-          - PROFILE=prod
+    environment:
+      - PROFILE=prod
+      - EUREKA_HOST=eureka-service
+      - CONFIG_SERVER_HOST_PORT=config-server:8888
     networks:
-      - microsservicos
+      - microsservices
 
   clinicdb:
     image: mongo:5.0.8
     container_name: clinicdb
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+      - MONGO_INITDB_DATABASE=clinicdb
     healthcheck:
       test: echo 'db.stats().ok' | mongo localhost:27017/clinicdb --quiet
     networks:
-      - microsservicos
+      - microsservices
 
   mysql:
     image: mysql:5.7.38
@@ -96,8 +118,8 @@ services:
     healthcheck:
       test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
     networks:
-      - microsservicos
+      - microsservices
 
 networks:
-  microsservicos:
+  microsservices:
     driver: bridge
