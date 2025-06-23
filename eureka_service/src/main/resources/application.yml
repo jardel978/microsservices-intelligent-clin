@@ -1,8 +1,12 @@
 server:
   port: 8761
+spring:
+  profiles:
+    active: ${PROFILE:test}
+
 eureka:
   instance:
-    hostname: eureka-service
+    hostname: ${EUREKA_HOST:localhost}
   client:
     registerWithEureka: true
     fetchRegistry: false
@@ -10,6 +14,7 @@ eureka:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka
   server:
     wait-time-in-ms-when-sync-empty: 3000
+
 management:
   info:
     env:
